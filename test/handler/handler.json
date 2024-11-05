@@ -1,0 +1,14 @@
+[
+  {
+    "type": "handler",
+    "name": "getProducts",
+    "api": "/products",
+    "method": "get",
+    "header": "",
+    "request": {
+      "type": "string"
+    },
+    "response": {
+    }
+  }
+]
