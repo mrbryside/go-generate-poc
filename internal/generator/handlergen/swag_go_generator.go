@@ -4,6 +4,7 @@ import (
 	"github.com/mrbryside/go-generate/internal/generator/template/handlertp"
 	"github.com/mrbryside/go-generate/internal/myfile"
 	"github.com/mrbryside/go-generate/internal/myhttp"
+	"github.com/mrbryside/go-generate/internal/mystr"
 	"strings"
 )
 
@@ -67,6 +68,7 @@ func generateSwagGoSummaryTemplate(currentContent string, htd HandlerTemplateDat
 }
 
 func generateSwagGoSuccessResponseTemplate(currentContent string, htd HandlerTemplateData) string {
+	htd.Name = mystr.CapitalizeFirstLetter(htd.Name)
 	if htd.Response == nil || htd.Response.Len() == 0 {
 		return currentContent
 	}
@@ -100,6 +102,7 @@ func generateSwagGoSuccessResponseTemplate(currentContent string, htd HandlerTem
 }
 
 func generateSwagGoFailureResponseTemplate(currentContent string, htd HandlerTemplateData) string {
+	htd.Name = mystr.CapitalizeFirstLetter(htd.Name)
 	if htd.Response == nil {
 		return currentContent
 	}
@@ -138,6 +141,7 @@ func generateSwagGoBaseTemplate(currentContent, apiPath, apiMethod string) strin
 }
 
 func generateSwagGoRequestTemplate(currentContent string, htd HandlerTemplateData) string {
+	htd.Name = mystr.CapitalizeFirstLetter(htd.Name)
 	if htd.Request == nil || htd.Request.Len() == 0 {
 		return currentContent
 	}

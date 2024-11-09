@@ -4,6 +4,7 @@ import (
 	"github.com/mrbryside/go-generate/internal/myfile"
 	"github.com/mrbryside/go-generate/internal/myhttp"
 	"github.com/mrbryside/go-generate/internal/mymap"
+	"github.com/mrbryside/go-generate/internal/mystr"
 	"strings"
 )
 
@@ -15,6 +16,7 @@ func generateRequest(
 	statusCodes []string,
 	isStatusCodeStyle bool,
 ) (string, string) {
+	handlerName = mystr.CapitalizeFirstLetter(handlerName)
 	if request == nil || request.Len() == 0 {
 		// remove every request block because it's not have request
 		template = myfile.RemoveLine(template, "#requestBind#")
@@ -81,6 +83,7 @@ func generateResponse(
 	statusCodes []string,
 	isStatusCodeStyle bool,
 ) (string, string) {
+	handlerName = mystr.CapitalizeFirstLetter(handlerName)
 	if response == nil || response.Len() == 0 {
 		template = ReplaceResponseBlockNoContentForNonStatusCodeStyle(template)
 		return template, templateGenerate

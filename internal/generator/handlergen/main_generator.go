@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/mrbryside/go-generate/internal/mygo"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -19,18 +20,24 @@ type HandlerTemplatedDataError struct {
 	Errors                  []error
 }
 
+type MandaToryError struct {
+	Path  string
+	Error error
+}
+
 func MainGenerateHandler(path string) (report Report) {
+	currentPathFolderToGenerate := strings.TrimSuffix(path, "/handler.json")
 	data, err := os.ReadFile(path)
 	if err != nil {
 		fmt.Printf("Error reading file %s: %v\n", path, err)
-		return Report{Error: err}
+		return Report{BasePathOfJsonSpec: currentPathFolderToGenerate, MandaToryError: MandaToryError{Path: currentPathFolderToGenerate, Error: err}}
 	}
 
 	var handlerTemplates []HandlerTemplateData
 	packageName := filepath.Base(filepath.Dir(path))
 	err = json.Unmarshal(data, &handlerTemplates)
 	if err != nil {
-		return Report{Error: err}
+		return Report{BasePathOfJsonSpec: currentPathFolderToGenerate, MandaToryError: MandaToryError{Path: currentPathFolderToGenerate, Error: err}}
 	}
 
 	var pathToGenerateErrors []PathToGenerateError
@@ -48,7 +55,7 @@ func MainGenerateHandler(path string) (report Report) {
 			// pathToGenerateErrors will use by function that call MainGenerateHandler
 			currentPath := strings.TrimSuffix(path, "handler.json")
 			fileUserHandlerName := currentPath + mystr.ToSnakeCase(ht.Name) + ".go"
-			fileGeneratedHandlerName := currentPath + mystr.ToSnakeCase(ht.Name) + "_gen.go"
+			fileGeneratedHandlerName := currentPath + "dto/" + mystr.ToSnakeCase(ht.Name) + "_gen.go"
 			pathToGenerateErrors = append(pathToGenerateErrors, PathToGenerateError{Path: fileUserHandlerName, Error: err})
 			pathToGenerateErrors = append(pathToGenerateErrors, PathToGenerateError{Path: fileGeneratedHandlerName, Error: err})
 
@@ -65,7 +72,7 @@ func MainGenerateHandler(path string) (report Report) {
 		// TODO: generate query params, path params
 
 		pathToGenerates, contentToGenerates = AddContentForUserHandlerAndGeneratedHandler(path, pathToGenerates, contentToGenerates, userHandlerContent, generatedHandlerContent, ht)
-		pathToGenerateTemps, contentToGenerateTemps = ReplaceContentForTempUserHandlerAndGeneratedHandler(path, pathToGenerateTemps, contentToGenerateTemps, userHandlerContent, generatedHandlerContent, ht)
+		pathToGenerateTemps, contentToGenerateTemps = AddContentForTempUserHandlerAndGeneratedHandler(path, pathToGenerateTemps, contentToGenerateTemps, userHandlerContent, generatedHandlerContent, ht)
 
 		// add to success routes
 		handlerTemplatedSuccessRoutes = append(handlerTemplatedSuccessRoutes, ht)
@@ -73,11 +80,16 @@ func MainGenerateHandler(path string) (report Report) {
 	pathToGenerates, contentToGenerates = AddContentForMainHandlerAndRouteFile(path, packageName, pathToGenerates, contentToGenerates, handlerTemplatesSuccessForGenerateRoute)
 	pathToGenerateTemps, contentToGenerateTemps = AddContentForTempMainHandlerAndRouteFile(path, packageName, pathToGenerateTemps, contentToGenerateTemps, handlerTemplatesSuccessForGenerateRoute)
 
+	pathToGenerates, contentToGenerates = AddContentForValidatorHelper(path, packageName, pathToGenerates, contentToGenerates)
+	pathToGenerateTemps, contentToGenerateTemps = AddContentForTempValidatorHelper(path, pathToGenerateTemps, contentToGenerateTemps)
+
 	// write all temp output paths
+	indexGenerateErrors := make([]int, 0)
 	for i, pgt := range pathToGenerateTemps {
 		err = os.WriteFile(pgt, []byte(contentToGenerateTemps[i]), 0644)
 		if err != nil {
-			pathToGenerateErrors = append(pathToGenerateErrors, PathToGenerateError{Path: pgt, Error: errors.New("write file error")})
+			pathToGenerateErrors = append(pathToGenerateErrors, PathToGenerateError{Path: pgt, Error: err})
+			indexGenerateErrors = append(indexGenerateErrors, i)
 			continue
 		}
 
@@ -85,6 +97,7 @@ func MainGenerateHandler(path string) (report Report) {
 		err = cmd.Run()
 		if err != nil {
 			pathToGenerateErrors = append(pathToGenerateErrors, PathToGenerateError{Path: pgt, Error: errors.New("go format error")})
+			indexGenerateErrors = append(indexGenerateErrors, i)
 			continue
 		}
 
@@ -92,8 +105,17 @@ func MainGenerateHandler(path string) (report Report) {
 		err = cmd.Run()
 		if err != nil {
 			pathToGenerateErrors = append(pathToGenerateErrors, PathToGenerateError{Path: pgt, Error: errors.New("go imports error")})
+			indexGenerateErrors = append(indexGenerateErrors, i)
 			continue
 		}
+	}
+
+	// run go vet to verify not have any error the folder temp
+	pathToRunVetInTempFolder := "./" + currentPathFolderToGenerate + "/" + GenTempGenerateFolderAndPackageName(path)
+	cmd := exec.Command("go", "vet", pathToRunVetInTempFolder)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return Report{BasePathOfJsonSpec: currentPathFolderToGenerate, MandaToryError: MandaToryError{Path: currentPathFolderToGenerate, Error: errors.New(fmt.Sprintf("%v: %s", err, string(output)))}}
 	}
 
 	// filter out failed from handlerTemplatedSuccessRoutes matching with pathToGenerateErrors
@@ -137,12 +159,12 @@ func MainGenerateHandler(path string) (report Report) {
 		handlerTemplateRoutesAddMoreFailedFromGenerate = append(handlerTemplateRoutesAddMoreFailedFromGenerate, v)
 	}
 
-	// construct pathToGenerateWithoutError
+	//// construct pathToGenerateWithoutError
 	pathToGenerateWithoutError := make([]string, 0)
-	for _, ptg := range pathToGenerates {
+	for i, ptg := range pathToGenerates {
 		match := false
-		for _, pge := range pathToGenerateErrors {
-			if ptg == pge.Path {
+		for _, idxErr := range indexGenerateErrors {
+			if idxErr == i {
 				match = true
 				continue
 			}
@@ -153,7 +175,24 @@ func MainGenerateHandler(path string) (report Report) {
 	}
 
 	// write all pathToGenerates with no error
-	for i, ptg := range pathToGenerateWithoutError {
+	for i, ptg := range pathToGenerates {
+		// check if it's a routes_gen.go (it's call function of handler that can be error inside that function if have any error skip to gen it
+		if strings.Contains(ptg, "routes_gen.go") {
+			if len(indexGenerateErrors) > 0 {
+				continue
+			}
+		}
+		// check exist in error index from generate temp? if yes continue
+		foundErr := false
+		for _, idx := range indexGenerateErrors {
+			if idx == i {
+				foundErr = true
+				break
+			}
+		}
+		if foundErr {
+			continue
+		}
 		_ = os.WriteFile(ptg, []byte(contentToGenerates[i]), 0644)
 
 		cmd := exec.Command("go", "fmt", ptg)
@@ -182,35 +221,63 @@ func MainGenerateHandler(path string) (report Report) {
 			isSuccess: isSwagInitSuccess,
 			Error:     swagInitError,
 		},
-		Error: error(nil),
+		MandaToryError: MandaToryError{Error: nil},
 	}
 }
 
-func ReplaceContentForTempUserHandlerAndGeneratedHandler(path string, pathToGenerateTemps []string, contentToGenerateTemps []string, userHandlerContent string, generatedHandlerContent string, ht HandlerTemplateData) ([]string, []string) {
+func AddContentForTempValidatorHelper(path string, pathToGenerates []string, contentToGenerates []string) ([]string, []string) {
+	packageName := GenTempGenerateFolderAndPackageName(path)
+	validatorHelperPath := strings.TrimSuffix(path, "handler.json") + fmt.Sprintf("%s/", GenTempGenerateFolderAndPackageName(path)) + "validator.go"
+	validationHelperContent := handlertp.ValidationHelperTemplate
+	validationHelperContent = myfile.RenamePackageGolangFile(validationHelperContent, packageName)
+
+	pathToGenerates = append(pathToGenerates, validatorHelperPath)
+	contentToGenerates = append(contentToGenerates, validationHelperContent)
+
+	return pathToGenerates, contentToGenerates
+}
+
+func AddContentForValidatorHelper(path string, packageName string, pathToGenerateTemps []string, contentToGenerateTemps []string) ([]string, []string) {
+	validatorHelperPath := strings.TrimSuffix(path, "handler.json") + "validator.go"
+	validationHelperContent := handlertp.ValidationHelperTemplate
+	validationHelperContent = myfile.RenamePackageGolangFile(validationHelperContent, packageName)
+
+	pathToGenerateTemps = append(pathToGenerateTemps, validatorHelperPath)
+	contentToGenerateTemps = append(contentToGenerateTemps, validationHelperContent)
+
+	return pathToGenerateTemps, contentToGenerateTemps
+}
+
+func AddContentForTempUserHandlerAndGeneratedHandler(path string, pathToGenerateTemps []string, contentToGenerateTemps []string, userHandlerContent string, generatedHandlerContent string, ht HandlerTemplateData) ([]string, []string) {
 	// generate user handler for temp
-	userHandlerTempPath := strings.TrimSuffix(path, "handler.json") + fmt.Sprintf("/%s/", GenTempGenerateFolderAndPackageName(path)) + mystr.ToSnakeCase(ht.Name) + ".go"
+	currentPath := strings.TrimSuffix(path, "/handler.json")
 	userHandlerTempContent := GenerateTempUserHandlerWithSwagGoSyntax(path, userHandlerContent, ht)
+	userHandlerTempContent = strings.Replace(userHandlerTempContent, "#moduleName#", fmt.Sprintf("%s/%s/%s/dto", mygo.GetModuleName(), currentPath, GenTempGenerateFolderAndPackageName(path)), -1)
+
+	userHandlerTempPath := strings.TrimSuffix(path, "handler.json") + fmt.Sprintf("%s/", GenTempGenerateFolderAndPackageName(path)) + mystr.ToSnakeCase(ht.Name) + ".go"
 	pathToGenerateTemps = append(pathToGenerateTemps, userHandlerTempPath)
 	contentToGenerateTemps = append(contentToGenerateTemps, userHandlerTempContent)
 
 	// generate generated handler for temp
-	generateHandlerTempPath := strings.TrimSuffix(path, "handler.json") + fmt.Sprintf("/%s/", GenTempGenerateFolderAndPackageName(path)) + mystr.ToSnakeCase(ht.Name) + "_gen.go"
-	handlerTempContent := myfile.RenamePackageGolangFile(generatedHandlerContent, GenTempGenerateFolderAndPackageName(path))
+	generateHandlerTempPath := strings.TrimSuffix(path, "handler.json") + fmt.Sprintf("%s/", GenTempGenerateFolderAndPackageName(path)) + "dto/" + mystr.ToSnakeCase(ht.Name) + "_gen.go"
 	pathToGenerateTemps = append(pathToGenerateTemps, generateHandlerTempPath)
-	contentToGenerateTemps = append(contentToGenerateTemps, handlerTempContent)
+	contentToGenerateTemps = append(contentToGenerateTemps, generatedHandlerContent)
 
 	return pathToGenerateTemps, contentToGenerateTemps
 }
 
 func AddContentForUserHandlerAndGeneratedHandler(path string, pathToGenerates []string, contentToGenerates []string, userHandlerContent string, generatedHandlerContent string, ht HandlerTemplateData) ([]string, []string) {
 	// generate user handler
+	currentPath := strings.TrimSuffix(path, "/handler.json")
 	userHandlerContent = strings.Replace(userHandlerContent, "#swaggo#", "", -1)
+	userHandlerContent = strings.Replace(userHandlerContent, "#moduleName#", fmt.Sprintf("%s/%s/dto", mygo.GetModuleName(), currentPath), -1)
+
 	userHandlerPath := strings.TrimSuffix(path, "handler.json") + mystr.ToSnakeCase(ht.Name) + ".go"
 	pathToGenerates = append(pathToGenerates, userHandlerPath)
 	contentToGenerates = append(contentToGenerates, userHandlerContent)
 
 	// generate generated handler
-	generateHandlerPath := strings.TrimSuffix(path, "handler.json") + mystr.ToSnakeCase(ht.Name) + "_gen.go"
+	generateHandlerPath := strings.TrimSuffix(path, "handler.json") + "dto/" + mystr.ToSnakeCase(ht.Name) + "_gen.go"
 	pathToGenerates = append(pathToGenerates, generateHandlerPath)
 	contentToGenerates = append(contentToGenerates, generatedHandlerContent)
 
@@ -235,7 +302,7 @@ func AddContentForMainHandlerAndRouteFile(path string, packageName string, pathT
 
 func AddContentForTempMainHandlerAndRouteFile(path string, packageName string, pathToGenerateTemps []string, contentToGenerateTemps []string, htds []HandlerTemplateData) ([]string, []string) {
 	// generate main handler for temp generated
-	mainHandlerTempPath := strings.TrimSuffix(path, "handler.json") + fmt.Sprintf("/%s/", GenTempGenerateFolderAndPackageName(path)) + "handler.go"
+	mainHandlerTempPath := strings.TrimSuffix(path, "handler.json") + fmt.Sprintf("%s/", GenTempGenerateFolderAndPackageName(path)) + "handler.go"
 	// this will generate swaggo because temp should have swaggo syntax to generate doc
 	mainHandlerTempContent := GenerateTempMainHandler(path, packageName)
 	mainHandlerTempContent = myfile.RenamePackageGolangFile(mainHandlerTempContent, GenTempGenerateFolderAndPackageName(path))
@@ -244,7 +311,7 @@ func AddContentForTempMainHandlerAndRouteFile(path string, packageName string, p
 
 	// generate handler routes file
 	routeContents := GenerateContentRoutes(htds, packageName)
-	routeOutputPath := strings.TrimSuffix(path, "handler.json") + fmt.Sprintf("/%s/", GenTempGenerateFolderAndPackageName(path)) + "routes_gen.go"
+	routeOutputPath := strings.TrimSuffix(path, "handler.json") + fmt.Sprintf("%s/", GenTempGenerateFolderAndPackageName(path)) + "routes_gen.go"
 	routeContents = myfile.RenamePackageGolangFile(routeContents, GenTempGenerateFolderAndPackageName(path))
 	pathToGenerateTemps = append(pathToGenerateTemps, routeOutputPath)
 	contentToGenerateTemps = append(contentToGenerateTemps, routeContents)
@@ -254,6 +321,7 @@ func AddContentForTempMainHandlerAndRouteFile(path string, packageName string, p
 
 func GenerateContentBothUserHandlerAndGeneratedHandler(packageName string, htd HandlerTemplateData) (string, string) {
 	template := handlertp.Template
+
 	template = strings.Replace(template, "handlertp", packageName, -1)
 	template = strings.Replace(template, "#handlerName#", mystr.CapitalizeFirstLetter(htd.Name)+"Handler", -1)
 	template = strings.Replace(template, "#handlerFuncName#", mystr.CapitalizeFirstLetter(htd.Name), -1)
@@ -261,7 +329,7 @@ func GenerateContentBothUserHandlerAndGeneratedHandler(packageName string, htd H
 	template = strings.Replace(template, "#responseName#", htd.Name+"Response", -1)
 
 	templateGenerate := handlertp.TemplateGenerate
-	templateGenerate = strings.Replace(templateGenerate, "handlertp", packageName, -1)
+	templateGenerate = strings.Replace(templateGenerate, "handlertp", "dto", -1)
 	templateGenerate = strings.Replace(templateGenerate, "#handlerFuncName#", mystr.CapitalizeFirstLetter(htd.Name), -1)
 
 	response, statusCodes, isStatusCodeStyle := transformStatusCodeStyleResponse(htd.Response)
@@ -271,10 +339,6 @@ func GenerateContentBothUserHandlerAndGeneratedHandler(packageName string, htd H
 	if htd.Request == nil || htd.Request.Len() == 0 {
 		return template, templateGenerate
 	}
-	// add some content to last line after generate struct to template_generate when needed
-	// add validation helper
-	validationHelperContent := strings.Replace(handlertp.ValidationHelperTemplate, "#handlerFuncName#", htd.Name, -1)
-	templateGenerate = myfile.AddContentToLastLine(templateGenerate, validationHelperContent)
 
 	return template, templateGenerate
 }

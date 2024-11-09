@@ -10,8 +10,8 @@ import (
 	"github.com/mrbryside/go-generate/test/handler/dto"
 )
 
-func (h Handler) CreateProducts(ctx echo.Context) error {
-	var req dto.CreateProductsRequest
+func (h Handler) UpdateProduct(ctx echo.Context) error {
+	var req dto.UpdateProductRequest
 	if err := ctx.Bind(&req); err != nil {
 		return ctx.JSON(http.StatusBadRequest, err)
 	}
@@ -21,5 +21,5 @@ func (h Handler) CreateProducts(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, ValidationError(err))
 	}
 
-	return ctx.JSON(http.StatusOK, dto.CreateProductsResponse{})
+	return ctx.JSON(http.StatusOK, dto.UpdateProductResponse{})
 }

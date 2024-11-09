@@ -8,6 +8,6 @@ import (
 	"github.com/mrbryside/go-generate/test/handler/dto"
 )
 
-func (h Handler) GetProducts(ctx echo.Context) error {
-	return ctx.JSON(http.StatusOK, dto.GetProductsResponse{})
+func (h Handler) GetProduct(ctx echo.Context) error {
+	return ctx.JSON(http.StatusOK, dto.GetProductResponse{})
 }

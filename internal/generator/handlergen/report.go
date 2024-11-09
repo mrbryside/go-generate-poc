@@ -7,7 +7,7 @@ type Report struct {
 	SwagGenerateReport          SwagGenerateReport
 	HandlerTemplateSuccessRoute []HandlerTemplateData
 	HandlerTemplateErrorRoute   []HandlerTemplatedDataError
-	Error                       error
+	MandaToryError              MandaToryError
 }
 
 type SwagGenerateReport struct {

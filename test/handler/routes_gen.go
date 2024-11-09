@@ -7,6 +7,8 @@ import "github.com/labstack/echo/v4"
 
 func RegisterRoutes(g *echo.Group, h Handler) {
 	g.POST("/products", h.CreateProducts)
-	g.PUT("/products", h.UpdateProducts)
 	g.GET("/products", h.GetProducts)
+	g.GET("/productsById", h.GetProduct)
+	g.PUT("/products", h.UpdateProduct)
+	g.DELETE("/products", h.DeleteProduct)
 }

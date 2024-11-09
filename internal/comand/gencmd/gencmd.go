@@ -40,10 +40,27 @@ func Run() {
 				return nil
 			}
 
+			// create folder dto in temp generated folder
+			err = myfile.CreateFolderIfNotExist(path, handlergen.GenTempGenerateFolderAndPackageName(path)+"/dto")
+			if err != nil {
+				fmt.Printf("Error creating swaggo directory: %v\n", err)
+				jsonSpecFailed = append(jsonSpecFailed, path)
+				return nil
+			}
+
+			// create folder dto
+			err = myfile.CreateFolderIfNotExist(path, "dto")
+			if err != nil {
+				fmt.Printf("Error creating swaggo directory: %v\n", err)
+				jsonSpecFailed = append(jsonSpecFailed, path)
+				return nil
+			}
+
 			// main generate handler
 			report := handlergen.MainGenerateHandler(path)
 			reports = append(reports, report)
 			paths = append(paths, report.BasePathOfJsonSpec)
+		
 			handlerGenPathForLogs = append(handlerGenPathForLogs, report.PathToGenerateSuccess...)
 		}
 		return nil

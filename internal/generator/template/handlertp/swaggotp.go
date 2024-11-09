@@ -12,13 +12,13 @@ const SwagDescriptionTemplate = `
 // @Description      #content#`
 
 const SwagRequestBodyTemplate = `
-// @Param request body #request# true "request body"`
+// @Param request body dto.#request# true "request body"`
 
 const SwagSuccessTemplate = `
-// @Success      #statusCode#  {#type#}  #response#`
+// @Success      #statusCode#  {#type#}  dto.#response#`
 
 const SwagFailureTemplate = `
-// @Failure      #statusCode#  {#type#}  #response#`
+// @Failure      #statusCode#  {#type#}  dto.#response#`
 
 const SwagTagTemplate = `
 // @Tags        #content#`

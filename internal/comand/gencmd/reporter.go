@@ -54,14 +54,29 @@ func printReports(rs []handlergen.Report) {
 
 // Refactored printReport to accumulate results in a string builder
 func printReport(r handlergen.Report) string {
-	var sb strings.Builder
-
 	// Summary texts
-	successLenText := renderSummaryText(len(r.HandlerTemplateSuccessRoute), "SUCCESS", greenSuccessSummary)
-	failedLenText := renderSummaryText(len(r.HandlerTemplateErrorRoute), "FAILED", redErrorSummary)
+	successLenText := renderSummaryTextWithLen(len(r.HandlerTemplateSuccessRoute), "SUCCESS", greenSuccessSummary)
+	failedLenText := renderSummaryTextWithLen(len(r.HandlerTemplateErrorRoute), "FAILED", redErrorSummary)
+	failedTextOnly := renderSummaryText("FAILED", redErrorSummary)
+
+	var sb strings.Builder
+	if r.MandaToryError.Error != nil {
+		sb.WriteString(fmt.Sprintf("\n%s %s %s \n", style.Render("PATH"), r.MandaToryError.Path, failedTextOnly))
+		sb.WriteString(underLineText.Render("==================================================") + "\n")
+		sb.WriteString(renderMandatoryError(r.MandaToryError.Error))
+		return sb.String()
+	}
+
+	swaggerReportText := ""
+	if r.SwagGenerateReport.Error == nil {
+		swaggerReportText = renderSummaryText("SWAGGER SUCCESS", greenSuccessSummary)
+	}
+	if r.SwagGenerateReport.Error != nil {
+		swaggerReportText = renderSummaryText("SWAGGER FAILED", redErrorSummary)
+	}
 
 	// Build header
-	sb.WriteString(fmt.Sprintf("\n%s %s • %s | %s\n", style.Render("PATH"), r.BasePathOfJsonSpec, successLenText, failedLenText))
+	sb.WriteString(fmt.Sprintf("\n%s %s • %s | %s | %s\n", style.Render("PATH"), r.BasePathOfJsonSpec, successLenText, failedLenText, swaggerReportText))
 	sb.WriteString(underLineText.Render("==================================================") + "\n")
 
 	// Build success routes
@@ -77,22 +92,27 @@ func printReport(r handlergen.Report) string {
 
 	// Build specific file errors for debugging (handler.go and routes_gen.go)
 	for _, e := range r.PathToGenerateError {
-		if strings.Contains(e.Path, "handler.go") {
-			sb.WriteString(renderRouteText("✗", "handler", redErrorText) + "\n")
-			sb.WriteString(renderErrorDetails([]error{e.Error}))
-		}
-		if strings.Contains(e.Path, "routes_gen.go") {
-			sb.WriteString(renderRouteText("✗", "routes", redErrorText) + "\n")
-			sb.WriteString(renderErrorDetails([]error{e.Error}))
-		}
+		sb.WriteString(renderRouteText("✗", e.Path, redErrorText) + "\n")
+		sb.WriteString(renderErrorDetails([]error{e.Error}))
+	}
+
+	// for debugger only
+	if r.SwagGenerateReport.Error != nil {
+		sb.WriteString(renderRouteText("✗", "swaggo", redErrorText) + "\n")
+		sb.WriteString(renderErrorDetails([]error{r.SwagGenerateReport.Error}))
 	}
 
 	return sb.String()
 }
 
-// Updated renderSummaryText to return a string
-func renderSummaryText(count int, label string, style lipgloss.Style) string {
+// Updated renderSummaryTextWithLen to return a string
+func renderSummaryTextWithLen(count int, label string, style lipgloss.Style) string {
 	return fmt.Sprintf("%v %v", style.Render(fmt.Sprintf("%v", count)), style.Render(label))
+}
+
+// Updated renderSummaryTextWithLen to return a string
+func renderSummaryText(label string, style lipgloss.Style) string {
+	return style.Render(label)
 }
 
 // Updated renderRouteText to return a string
@@ -107,5 +127,12 @@ func renderErrorDetails(errors []error) string {
 	for _, e := range errors {
 		sb.WriteString(errorDetailStyle.Render(fmt.Sprintf("    • %s", e.Error())) + "\n")
 	}
+	return sb.String()
+}
+
+func renderMandatoryError(e error) string {
+	var sb strings.Builder
+	errorDetailStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#ff3333"))
+	sb.WriteString(errorDetailStyle.Render(fmt.Sprintf("• %s", e.Error())) + "\n")
 	return sb.String()
 }

@@ -2,6 +2,7 @@ package myfile
 
 import (
 	"fmt"
+	"github.com/mrbryside/go-generate/internal/mystr"
 	"os"
 	"path/filepath"
 	"strings"
@@ -52,18 +53,19 @@ func RemoveLine(template, placeholder string) string {
 	return strings.Join(result, "\n")
 }
 
-func CreateNewStructs(newStructs []NewStruct) string {
+func CreateNewWithSwagGoNameCommentStructs(newStructs []NewStruct) string {
 	content := ""
 	for _, ns := range newStructs {
-		content += "type " + ns.Name + " struct {\n" + ns.Fields + "\n}\n\n"
+		content += "type " + ns.Name + " struct {\n" + ns.Fields + "\n}// @name " + ns.Name + "\n\n"
+
 	}
 	return content
 }
 
 func AddStructToLastLine(currentContent, fields, structName string) string {
-	newContent := CreateNewStructs([]NewStruct{
+	newContent := CreateNewWithSwagGoNameCommentStructs([]NewStruct{
 		{
-			Name:   structName,
+			Name:   mystr.CapitalizeFirstLetter(structName),
 			Fields: fields,
 		},
 	})

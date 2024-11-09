@@ -14,19 +14,6 @@
   },
   {
     "type": "handler",
-    "name": "updateProducts",
-    "api": "/products",
-    "method": "put",
-    "header": "",
-    "request": {
-      "type": "string|required"
-    },
-    "response": {
-      "type": "string"
-    }
-  },
-  {
-    "type": "handler",
     "name": "getProducts",
     "api": "/products",
     "method": "get",
@@ -34,5 +21,38 @@
     "response": {
       "type": "string"
     }
+  },
+  {
+      "type": "handler",
+      "name": "getProduct",
+      "api": "/productsById",
+      "method": "get",
+      "header": "",
+      "response": {
+        "type": "string"
+      }
+  },
+  {
+      "type": "handler",
+      "name": "updateProduct",
+      "api": "/products",
+      "method": "put",
+      "header": "",
+      "request": {
+        "type": "string|required"
+      },
+      "response": {
+        "type": "string"
+      }
+  },
+  {
+      "type": "handler",
+      "name": "deleteProduct",
+      "api": "/products",
+      "method": "delete",
+      "header": "",
+      "response": {
+        "type": "string"
+      }
   }
 ]

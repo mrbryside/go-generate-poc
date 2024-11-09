@@ -3,20 +3,29 @@ package handlertp
 const RequestValidationTemplate = `
 	validate := validator.New()
 	if err := validate.Struct(req); err != nil {
-		return ctx.JSON(http.StatusBadRequest, #handlerFuncName#ValidationError(err))
+		return ctx.JSON(http.StatusBadRequest, ValidationError(err))
 	}
 `
 
 const RequestValidationForStatusCodeStyleTemplate = `validate := validator.New()
 	if err := validate.Struct(req); err != nil {
 		// you can use this result from the validation error to return the map error message
-		_ = #handlerFuncName#ValidationError(err)
-		return ctx.JSON(http.StatusBadRequest, #responseName#)
+		_ = ValidationError(err)
+		return ctx.JSON(http.StatusBadRequest, dto.#responseName#)
 	}
 `
 
 const ValidationHelperTemplate = `
-func #handlerFuncName#ValidationError(err error) map[string]string {
+package handlertp
+
+import (
+	"fmt"
+	"errors"
+
+	"github.com/go-playground/validator/v10"
+)
+
+func ValidationError(err error) map[string]string {
 	var validationErrors validator.ValidationErrors
 	errs := make(map[string]string)
 	if errors.As(err, &validationErrors) {
