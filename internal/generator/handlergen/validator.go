@@ -87,7 +87,7 @@ func validateStructRequestOrResponse(structType string, content *mymap.OrderedMa
 		value := pair.Value
 		// Check if the key matches the required format.
 		if !keyRegex.MatchString(key) {
-			return fmt.Errorf("[%s] key '%s' is invalid: must start with a letter and contain only letters and numbers or using http status code(200, 201, ...)", structType, key)
+			return fmt.Errorf("[json-spec-format-error][%s] key '%s' is invalid: must start with a letter and contain only letters and numbers or using http status code(200, 201, ...)", structType, key)
 		}
 
 		// Check if the value is a nested map and validate it recursively.
@@ -112,10 +112,10 @@ func validateStructRequestOrResponse(structType string, content *mymap.OrderedMa
 				}
 				valStringSlice, ok := vs.(string)
 				if ok && !valueRegex.MatchString(valStringSlice) {
-					return fmt.Errorf("[%s] value for key '%s' is invalid: must be in the format '[gotype]' or '[gotype]|[go validation string]'", structType, key)
+					return fmt.Errorf("[json-spec-format-error][%s] value for key '%s' is invalid: must be in the format '[gotype]' or '[gotype]|[go validation string]'", structType, key)
 				}
 				if !ok {
-					return fmt.Errorf("[%s] value for key '%s' is invalid: must be string in the format '[gotype]' or '[gotype]|[go validation string]'", structType, key)
+					return fmt.Errorf("[json-spec-format-error][%s] value for key '%s' is invalid: must be string in the format '[gotype]' or '[gotype]|[go validation string]'", structType, key)
 				}
 			}
 			return nil
@@ -124,10 +124,10 @@ func validateStructRequestOrResponse(structType string, content *mymap.OrderedMa
 		// Check if the value is a string and matches the required format.
 		valString, ok := value.(string)
 		if ok && !valueRegex.MatchString(valString) {
-			return fmt.Errorf("[%s] value for key '%s' is invalid: must be in the format '[gotype]' or '[gotype]|[go validation string]'", structType, key)
+			return fmt.Errorf("[json-spec-format-error][%s] value for key '%s' is invalid: must be in the format '[gotype]' or '[gotype]|[go validation string]'", structType, key)
 		}
 		if !ok {
-			return fmt.Errorf("[%s] value for key '%s' is invalid: must be string in the format '[gotype]' or '[gotype]|[go validation string]'", structType, key)
+			return fmt.Errorf("[json-spec-format-error][%s] value for key '%s' is invalid: must be string in the format '[gotype]' or '[gotype]|[go validation string]'", structType, key)
 		}
 	}
 	return nil
@@ -153,10 +153,10 @@ func validateResponse(response *mymap.OrderedMap) error {
 			}
 			key := pair.Key
 			if len(key) != 3 {
-				return errors.New("[response] HTTP status code must be 3 digits")
+				return errors.New("[json-spec-format-error][response] HTTP status code must be 3 digits")
 			}
 			if !myhttp.IsKeyInStatusMapping(key) {
-				return errors.New("[response] HTTP status code must not be in the status mapping")
+				return errors.New("[json-spec-format-error][response] HTTP status code must not be in the status mapping")
 			}
 
 		}
@@ -175,7 +175,7 @@ func validateResponse(response *mymap.OrderedMap) error {
 					return err
 				}
 			} else {
-				return errors.New("[response] value must be an object represent your response code and response body")
+				return errors.New("[json-spec-format-error][response] value must be an object represent your response code and response body")
 			}
 		}
 	} else {

@@ -32,7 +32,7 @@ cover*.*
 .DS_Store
 
 # Dep Graph
-/docs/dep_*
+/doc/dep_*
 
 # docker volumns
 data/

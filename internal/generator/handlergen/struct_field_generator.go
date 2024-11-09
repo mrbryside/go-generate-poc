@@ -9,7 +9,14 @@ import (
 )
 
 // Helper function to generate struct fields from request map
-func generateStructFields(payloadType string, handlerName string, requestOrResponse *mymap.OrderedMap, fields []string, nss []myfile.NewStruct, previousTypeName string) (string, []myfile.NewStruct) {
+func generateStructFields(
+	payloadType string,
+	handlerName string,
+	requestOrResponse *mymap.OrderedMap,
+	fields []string,
+	nss []myfile.NewStruct,
+	previousTypeName string,
+) (string, []myfile.NewStruct) {
 	iter := requestOrResponse.EntriesIter()
 	for {
 		pair, ok := iter()

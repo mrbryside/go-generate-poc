@@ -2,9 +2,8 @@ package main
 
 import (
 	"fmt"
-	"os"
-
 	"github.com/mrbryside/go-generate/internal/comand/gencmd"
+	"os"
 )
 
 func main() {
@@ -16,7 +15,6 @@ func main() {
 	switch os.Args[1] {
 	case "generate":
 		gencmd.Run()
-		println("[go-generate] Successfully generated files!")
 	default:
 		fmt.Printf("Unknown command: %s\n", os.Args[1])
 		os.Exit(1)

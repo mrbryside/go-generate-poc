@@ -26,6 +26,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+#swaggo#
 func (h Handler) #handlerFuncName#(ctx echo.Context) error {
 	#requestBind#
 	#requestValidation#
@@ -34,7 +35,7 @@ func (h Handler) #handlerFuncName#(ctx echo.Context) error {
 `
 
 const HandlerMainTemplate = `
-package handler
+package handlertp
 
 type Handler struct {
 }

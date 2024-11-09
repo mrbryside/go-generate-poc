@@ -52,7 +52,7 @@ func TestGenerateHandlerWithStatusCodeStyleTemplateWithRequest(t *testing.T) {
 	if err != nil {
 		t.Error("wrong handler template data")
 	}
-	template, templateGenerate := GenerateHandler("handler", handlerTemplates[0])
+	template, templateGenerate := GenerateContentBothUserHandlerAndGeneratedHandler("handler", handlerTemplates[0])
 	outputTemplatePath := "test/template_generated.go"
 	outputTemplateGeneratePath := "test/template_generate_generated.go"
 

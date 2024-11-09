@@ -6,12 +6,15 @@ import (
 )
 
 type HandlerTemplateData struct {
-	Type     string            `json:"type"`
-	Name     string            `json:"name"`
-	Request  *mymap.OrderedMap `json:"request"`
-	Response *mymap.OrderedMap `json:"response"`
-	Api      string            `json:"api"`
-	Method   string            `json:"method"`
+	Type        string            `json:"type"`
+	Name        string            `json:"name"`
+	Description string            `json:"description"`
+	Summary     string            `json:"summary"`
+	Tag         string            `json:"tag"`
+	Request     *mymap.OrderedMap `json:"request"`
+	Response    *mymap.OrderedMap `json:"response"`
+	Api         string            `json:"api"`
+	Method      string            `json:"method"`
 }
 
 // UnmarshalJSON for HandlerTemplateData to handle OrderedMaps in Request and Response to maintain user spec json order
@@ -32,12 +35,12 @@ func (h *HandlerTemplateData) UnmarshalJSON(data []byte) error {
 	var omRequest = mymap.NewOrderedMap()
 	err := json.Unmarshal(aux.Request, omRequest)
 	if err != nil {
-		return err
+		h.Request = nil
 	}
 	var omResponse = mymap.NewOrderedMap()
 	err = json.Unmarshal(aux.Response, omResponse)
 	if err != nil {
-		return err
+		h.Response = nil
 	}
 
 	h.Request = omRequest

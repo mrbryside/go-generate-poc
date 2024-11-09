@@ -5,56 +5,7 @@ import (
 	"github.com/mrbryside/go-generate/internal/myhttp"
 	"github.com/mrbryside/go-generate/internal/mymap"
 	"strings"
-
-	"github.com/mrbryside/go-generate/internal/generator/template/handlertp"
-	"github.com/mrbryside/go-generate/internal/mystr"
 )
-
-func GenerateHandler(packageName string, htd HandlerTemplateData) (string, string) {
-	template := handlertp.Template
-	template = strings.Replace(template, "handlertp", packageName, -1)
-	template = strings.Replace(template, "#handlerName#", mystr.CapitalizeFirstLetter(htd.Name)+"Handler", -1)
-	template = strings.Replace(template, "#handlerFuncName#", mystr.CapitalizeFirstLetter(htd.Name), -1)
-	template = strings.Replace(template, "#requestName#", htd.Name+"Request", -1)
-	template = strings.Replace(template, "#responseName#", htd.Name+"Response", -1)
-
-	templateGenerate := handlertp.TemplateGenerate
-	templateGenerate = strings.Replace(templateGenerate, "handlertp", packageName, -1)
-	templateGenerate = strings.Replace(templateGenerate, "#handlerFuncName#", mystr.CapitalizeFirstLetter(htd.Name), -1)
-
-	response, statusCodes, isStatusCodeStyle := transformStatusCodeStyleResponse(htd.Response)
-	template, templateGenerate = generateRequest(template, templateGenerate, htd.Name, htd.Request, statusCodes, isStatusCodeStyle)
-	template, templateGenerate = generateResponse(template, templateGenerate, htd.Name, response, statusCodes, isStatusCodeStyle)
-
-	// add some content to last line after generate struct to template_generate
-	if htd.Request != nil {
-		// add validation helper
-		validationHelperContent := strings.Replace(handlertp.ValidationHelperTemplate, "#handlerFuncName#", htd.Name, -1)
-		templateGenerate = myfile.AddContentToLastLine(templateGenerate, validationHelperContent)
-	}
-
-	return template, templateGenerate
-}
-
-func GenerateMainHandler() string {
-	return handlertp.HandlerMainTemplate
-}
-
-func GenerateHandlerRoutes(htds []HandlerTemplateData) string {
-	var routeContents string
-	for idx, htd := range htds {
-		echoRouteTemplate := handlertp.EchoRouteTemplate
-		echoRouteTemplate = strings.Replace(echoRouteTemplate, "#handlerMethod#", strings.ToUpper(htd.Method), -1)
-		echoRouteTemplate = strings.Replace(echoRouteTemplate, "#handlerRoute#", htd.Api, -1)
-		echoRouteTemplate = strings.Replace(echoRouteTemplate, "#handlerFuncName#", mystr.CapitalizeFirstLetter(htd.Name), -1)
-		routeContents += echoRouteTemplate
-		if idx != len(htds)-1 {
-			routeContents += "\n"
-		}
-	}
-	routeTemplate := handlertp.RouteTemplate
-	return strings.Replace(routeTemplate, "#route#", routeContents, -1)
-}
 
 func generateRequest(
 	template,
@@ -64,17 +15,17 @@ func generateRequest(
 	statusCodes []string,
 	isStatusCodeStyle bool,
 ) (string, string) {
-	if request != nil && request.Len() != 0 {
-		if isStatusCodeStyle {
-			return generateRequestStatusCodeStyle(template, templateGenerate, handlerName, request, statusCodes)
-		}
-		return generateRequestNonStatusCodeStyle(template, templateGenerate, handlerName, request)
+	if request == nil || request.Len() == 0 {
+		// remove every request block because it's not have request
+		template = myfile.RemoveLine(template, "#requestBind#")
+		template = myfile.RemoveLine(template, "#requestValidation#")
+		return template, templateGenerate
 	}
-	// remove every request block because it's not have request
-	template = myfile.RemoveLine(template, "#requestBind#")
-	template = myfile.RemoveLine(template, "#requestValidation#")
+	if isStatusCodeStyle {
+		return generateRequestStatusCodeStyle(template, templateGenerate, handlerName, request, statusCodes)
+	}
 
-	return template, templateGenerate
+	return generateRequestNonStatusCodeStyle(template, templateGenerate, handlerName, request)
 }
 
 func generateRequestStatusCodeStyle(
@@ -130,6 +81,10 @@ func generateResponse(
 	statusCodes []string,
 	isStatusCodeStyle bool,
 ) (string, string) {
+	if response == nil || response.Len() == 0 {
+		template = ReplaceResponseBlockNoContentForNonStatusCodeStyle(template)
+		return template, templateGenerate
+	}
 	if isStatusCodeStyle {
 		return generateResponseStatusCodeStyle(template, templateGenerate, handlerName, response, statusCodes)
 	}
@@ -143,11 +98,6 @@ func generateResponseStatusCodeStyle(
 	response *mymap.OrderedMap,
 	statusCodes []string,
 ) (string, string) {
-	if response == nil {
-		template = ReplaceResponseBlockNoContentForNonStatusCodeStyle(template)
-		return template, templateGenerate
-	}
-
 	_, newResponseStructs := generateStructFields("Response", handlerName, response, []string{}, []myfile.NewStruct{}, "")
 	if len(newResponseStructs) != 0 {
 		for _, newResponseStruct := range newResponseStructs {
@@ -165,11 +115,6 @@ func generateResponseNonStatusCodeStyle(
 	handlerName string,
 	response *mymap.OrderedMap,
 ) (string, string) {
-	if response == nil {
-		template = ReplaceResponseBlockNoContentForNonStatusCodeStyle(template)
-		return template, templateGenerate
-	}
-
 	fieldsResponseString, newResponseStructs := generateStructFields("Response", handlerName, response, []string{}, []myfile.NewStruct{}, "")
 	if len(newResponseStructs) != 0 {
 		for _, newResponseStruct := range newResponseStructs {

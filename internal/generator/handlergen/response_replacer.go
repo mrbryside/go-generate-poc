@@ -23,7 +23,7 @@ func ReplaceSuccessResponseBlockForStatusCodeStyle(currentContent string, status
 			break
 		}
 	}
-	// validateTemplate is empty means not found status code 200 using default validation template
+	// validateTemplate is empty means not found status code 200 or 201 using default success response template
 	if successTemplate == "" {
 		return ReplaceResponseBlockNoContentForNonStatusCodeStyle(currentContent)
 	}

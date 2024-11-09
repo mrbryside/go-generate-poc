@@ -1,14 +1,38 @@
 [
   {
     "type": "handler",
+    "name": "createProducts",
+    "api": "/products",
+    "method": "post",
+    "header": "",
+    "request": {
+      "type": "string|required"
+    },
+    "response": {
+      "type": "string"
+    }
+  },
+  {
+    "type": "handler",
+    "name": "updateProducts",
+    "api": "/products",
+    "method": "put",
+    "header": "",
+    "request": {
+      "type": "string|required"
+    },
+    "response": {
+      "type": "string"
+    }
+  },
+  {
+    "type": "handler",
     "name": "getProducts",
     "api": "/products",
     "method": "get",
     "header": "",
-    "request": {
-      "type": "string"
-    },
     "response": {
+      "type": "string"
     }
   }
 ]
