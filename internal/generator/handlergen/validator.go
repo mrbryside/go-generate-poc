@@ -3,8 +3,8 @@ package handlergen
 import (
 	"errors"
 	"fmt"
-	"github.com/mrbryside/go-generate/internal/myhttp"
-	"github.com/mrbryside/go-generate/internal/mymap"
+	"github.com/mrbryside/go-generate/internal/utils/myhttp"
+	"github.com/mrbryside/go-generate/internal/utils/mymap"
 	"regexp"
 	"strings"
 )

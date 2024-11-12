@@ -52,7 +52,11 @@
       "method": "delete",
       "header": "",
       "response": {
-        "type": "string"
+        "data": {
+          "my_data": {
+            "type": "string"
+          }
+        }
       }
   }
 ]

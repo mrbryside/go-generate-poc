@@ -2,7 +2,7 @@ package handlergen
 
 import (
 	"encoding/json"
-	"github.com/mrbryside/go-generate/internal/mymap"
+	"github.com/mrbryside/go-generate/internal/utils/mymap"
 )
 
 type HandlerTemplateData struct {

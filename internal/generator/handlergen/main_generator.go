@@ -4,15 +4,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/mrbryside/go-generate/internal/mygo"
+	"github.com/mrbryside/go-generate/internal/utils/myfile"
+	"github.com/mrbryside/go-generate/internal/utils/mygo"
+	"github.com/mrbryside/go-generate/internal/utils/mystr"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/mrbryside/go-generate/internal/generator/template/handlertp"
-	"github.com/mrbryside/go-generate/internal/myfile"
-	"github.com/mrbryside/go-generate/internal/mystr"
 )
 
 type HandlerTemplatedDataError struct {
@@ -26,18 +26,18 @@ type MandaToryError struct {
 }
 
 func MainGenerateHandler(path string) (report Report) {
-	currentPathFolderToGenerate := strings.TrimSuffix(path, "/handler.json")
+	basePathToGenerate := GenBasePath(path)
 	data, err := os.ReadFile(path)
 	if err != nil {
 		fmt.Printf("Error reading file %s: %v\n", path, err)
-		return Report{BasePathOfJsonSpec: currentPathFolderToGenerate, MandaToryError: MandaToryError{Path: currentPathFolderToGenerate, Error: err}}
+		return Report{BasePathOfJsonSpec: basePathToGenerate, MandaToryError: MandaToryError{Path: basePathToGenerate, Error: err}}
 	}
 
 	var handlerTemplates []HandlerTemplateData
 	packageName := filepath.Base(filepath.Dir(path))
 	err = json.Unmarshal(data, &handlerTemplates)
 	if err != nil {
-		return Report{BasePathOfJsonSpec: currentPathFolderToGenerate, MandaToryError: MandaToryError{Path: currentPathFolderToGenerate, Error: err}}
+		return Report{BasePathOfJsonSpec: basePathToGenerate, MandaToryError: MandaToryError{Path: basePathToGenerate, Error: err}}
 	}
 
 	var pathToGenerateErrors []PathToGenerateError
@@ -53,9 +53,8 @@ func MainGenerateHandler(path string) (report Report) {
 		if err != nil {
 			// need to get path and file that we generate and add to knab_logs.json because we dont wanna delete user file that write wrong format of spec
 			// pathToGenerateErrors will use by function that call MainGenerateHandler
-			currentPath := strings.TrimSuffix(path, "handler.json")
-			fileUserHandlerName := currentPath + mystr.ToSnakeCase(ht.Name) + ".go"
-			fileGeneratedHandlerName := currentPath + "dto/" + mystr.ToSnakeCase(ht.Name) + "_gen.go"
+			fileUserHandlerName := GenerateGoFileNameInBasePath(path, GenHandlerFileNameFromHandlerTemplate(ht))
+			fileGeneratedHandlerName := GenGoFileNameGeneratedInDtoBasePath(path, GenHandlerFileNameFromHandlerTemplate(ht))
 			pathToGenerateErrors = append(pathToGenerateErrors, PathToGenerateError{Path: fileUserHandlerName, Error: err})
 			pathToGenerateErrors = append(pathToGenerateErrors, PathToGenerateError{Path: fileGeneratedHandlerName, Error: err})
 
@@ -110,12 +109,12 @@ func MainGenerateHandler(path string) (report Report) {
 		}
 	}
 
-	// run go vet to verify not have any error the folder temp
-	pathToRunVetInTempFolder := "./" + currentPathFolderToGenerate + "/" + GenTempGenerateFolderAndPackageName(path)
+	// run go vet to verify not have any error in folder temp
+	pathToRunVetInTempFolder := "./" + basePathToGenerate + "/" + GenTempGenerateFolderAndPackageName(path)
 	cmd := exec.Command("go", "vet", pathToRunVetInTempFolder)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return Report{BasePathOfJsonSpec: currentPathFolderToGenerate, MandaToryError: MandaToryError{Path: currentPathFolderToGenerate, Error: errors.New(fmt.Sprintf("%v: %s", err, string(output)))}}
+		return Report{BasePathOfJsonSpec: basePathToGenerate, MandaToryError: MandaToryError{Path: basePathToGenerate, Error: errors.New(fmt.Sprintf("%v: %s", err, string(output)))}}
 	}
 
 	// filter out failed from handlerTemplatedSuccessRoutes matching with pathToGenerateErrors
@@ -159,7 +158,7 @@ func MainGenerateHandler(path string) (report Report) {
 		handlerTemplateRoutesAddMoreFailedFromGenerate = append(handlerTemplateRoutesAddMoreFailedFromGenerate, v)
 	}
 
-	//// construct pathToGenerateWithoutError
+	// construct pathToGenerateWithoutError
 	pathToGenerateWithoutError := make([]string, 0)
 	for i, ptg := range pathToGenerates {
 		match := false

@@ -2,9 +2,8 @@ package handlergen
 
 import (
 	"fmt"
+	"github.com/mrbryside/go-generate/internal/utils/myfile"
 	"os/exec"
-
-	"github.com/mrbryside/go-generate/internal/myfile"
 )
 
 func runSwagGoInit(path string) error {

@@ -2,7 +2,7 @@ package gencmd
 
 import (
 	"fmt"
-	"github.com/mrbryside/go-generate/internal/myfile"
+	"github.com/mrbryside/go-generate/internal/utils/myfile"
 	"os"
 	"path/filepath"
 	"strings"
@@ -60,7 +60,7 @@ func Run() {
 			report := handlergen.MainGenerateHandler(path)
 			reports = append(reports, report)
 			paths = append(paths, report.BasePathOfJsonSpec)
-		
+
 			handlerGenPathForLogs = append(handlerGenPathForLogs, report.PathToGenerateSuccess...)
 		}
 		return nil

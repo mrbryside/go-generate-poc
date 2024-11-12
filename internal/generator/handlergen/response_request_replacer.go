@@ -2,7 +2,7 @@ package handlergen
 
 import (
 	"github.com/mrbryside/go-generate/internal/generator/template/handlertp"
-	"github.com/mrbryside/go-generate/internal/myhttp"
+	"github.com/mrbryside/go-generate/internal/utils/myhttp"
 	"strings"
 )
 

@@ -1,11 +1,10 @@
 package handlergen
 
 import (
-	"github.com/mrbryside/go-generate/internal/myfile"
-	"github.com/mrbryside/go-generate/internal/mymap"
+	"github.com/mrbryside/go-generate/internal/utils/myfile"
+	"github.com/mrbryside/go-generate/internal/utils/mymap"
+	"github.com/mrbryside/go-generate/internal/utils/mystr"
 	"strings"
-
-	"github.com/mrbryside/go-generate/internal/mystr"
 )
 
 // Helper function to generate struct fields from request map

@@ -12,10 +12,20 @@ definitions:
       type:
         type: string
     type: object
-  DeleteProductResponse:
+  DeleteProductDataMyDataResponse:
     properties:
       type:
         type: string
+    type: object
+  DeleteProductDataResponse:
+    properties:
+      my_data:
+        $ref: '#/definitions/DeleteProductDataMyDataResponse'
+    type: object
+  DeleteProductResponse:
+    properties:
+      data:
+        $ref: '#/definitions/DeleteProductDataResponse'
     type: object
   GetProductResponse:
     properties:

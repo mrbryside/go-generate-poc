@@ -5,12 +5,14 @@ import (
 )
 
 const (
-	// TempGenerateFolderAndPackageName value `entities` will show in swagger object
-	TempGenerateFolderAndPackageName = "entities"
+	// TempGenerateFolderAndPackageName is the name of the folder and package that will be generated
+	TempGenerateFolderAndPackageName = "temp_generated"
+	DtoFolderAndPackageName          = "dto"
 )
 
 func GenTempGenerateFolderAndPackageName(path string) string {
 	result := GenBasePath(path)
 	result = strings.Replace(result, "/", "_", -1)
+	result += "_" + TempGenerateFolderAndPackageName
 	return result
 }

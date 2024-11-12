@@ -2,7 +2,7 @@ package gencmd
 
 import (
 	"encoding/json"
-	"github.com/mrbryside/go-generate/internal/myfile"
+	"github.com/mrbryside/go-generate/internal/utils/myfile"
 	"os"
 )
 

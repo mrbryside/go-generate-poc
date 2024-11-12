@@ -2,7 +2,7 @@ package myfile
 
 import (
 	"fmt"
-	"github.com/mrbryside/go-generate/internal/mystr"
+	"github.com/mrbryside/go-generate/internal/utils/mystr"
 	"os"
 	"path/filepath"
 	"strings"

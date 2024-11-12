@@ -142,11 +142,27 @@ const docTemplate = `{
                 }
             }
         },
-        "DeleteProductResponse": {
+        "DeleteProductDataMyDataResponse": {
             "type": "object",
             "properties": {
                 "type": {
                     "type": "string"
+                }
+            }
+        },
+        "DeleteProductDataResponse": {
+            "type": "object",
+            "properties": {
+                "my_data": {
+                    "$ref": "#/definitions/DeleteProductDataMyDataResponse"
+                }
+            }
+        },
+        "DeleteProductResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/DeleteProductDataResponse"
                 }
             }
         },
