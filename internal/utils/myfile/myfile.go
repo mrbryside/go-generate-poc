@@ -76,7 +76,7 @@ func AddContentToLastLine(currentContent, newContent string) string {
 	return currentContent + "\n" + newContent
 }
 
-func RenamePackageGolangFile(currentContent, newPackageName string) string {
+func RenamePackageGolangFileContent(currentContent, newPackageName string) string {
 	lines := strings.Split(currentContent, "\n")
 	var result []string
 

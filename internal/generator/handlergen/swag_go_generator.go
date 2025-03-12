@@ -1,22 +1,23 @@
 package handlergen
 
 import (
+	"strings"
+
 	"github.com/mrbryside/go-generate/internal/generator/template/handlertp"
 	"github.com/mrbryside/go-generate/internal/utils/myfile"
 	"github.com/mrbryside/go-generate/internal/utils/myhttp"
 	"github.com/mrbryside/go-generate/internal/utils/mystr"
-	"strings"
 )
 
-func GenerateTempMainHandler(path string, packageName string) string {
+func GenerateTempMainHandlerContent(path string, packageName string) string {
 	result := GenerateContentMainHandler(packageName)
-	result = myfile.RenamePackageGolangFile(result, GenTempGenerateFolderAndPackageName(path))
+	result = myfile.RenamePackageGolangFileContent(result, GenTempGenerateFolderAndPackageName(path))
 
 	return result
 }
 
 func GenerateTempUserHandlerWithSwagGoSyntax(path string, currentContent string, htd HandlerTemplateData) string {
-	currentContent = myfile.RenamePackageGolangFile(currentContent, GenTempGenerateFolderAndPackageName(path))
+	currentContent = myfile.RenamePackageGolangFileContent(currentContent, GenTempGenerateFolderAndPackageName(path))
 	result := generateSwagGoBaseTemplate(currentContent, htd.Api, htd.Method)
 	result = generateSwagGoSummaryTemplate(result, htd)
 	result = generateSwagGoDescriptionTemplate(result, htd)

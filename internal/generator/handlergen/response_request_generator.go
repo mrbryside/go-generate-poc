@@ -1,11 +1,11 @@
 package handlergen
 
 import (
+	"github.com/mrbryside/go-generate/internal/generator/template/handlertp"
 	"github.com/mrbryside/go-generate/internal/utils/myfile"
 	"github.com/mrbryside/go-generate/internal/utils/myhttp"
 	"github.com/mrbryside/go-generate/internal/utils/mymap"
 	"github.com/mrbryside/go-generate/internal/utils/mystr"
-	"strings"
 )
 
 func generateRequest(
@@ -19,8 +19,8 @@ func generateRequest(
 	handlerName = mystr.CapitalizeFirstLetter(handlerName)
 	if request == nil || request.Len() == 0 {
 		// remove every request block because it's not have request
-		template = myfile.RemoveLine(template, "#requestBind#")
-		template = myfile.RemoveLine(template, "#requestValidation#")
+		template = myfile.RemoveLine(template, handlertp.RequestBindReplaceName)
+		template = myfile.RemoveLine(template, handlertp.RequestValidationReplaceName)
 		return template, templateGenerate
 	}
 	if isStatusCodeStyle {
@@ -39,8 +39,7 @@ func generateRequestStatusCodeStyle(
 ) (string, string) {
 	// generate struct for request
 	fieldsRequestString, newRequestStructs := generateStructFields("Request", handlerName, request, []string{}, []myfile.NewStruct{}, "")
-	templateGenerate = strings.Replace(templateGenerate, "#requestFields#", fieldsRequestString, -1)
-	templateGenerate = myfile.AddStructToLastLine(templateGenerate, fieldsRequestString, handlerName+"Request")
+	templateGenerate = myfile.AddStructToLastLine(templateGenerate, fieldsRequestString, GetHandlerRequestName(handlerName))
 	if len(newRequestStructs) != 0 {
 		for _, newRequestStruct := range newRequestStructs {
 			templateGenerate = myfile.AddStructToLastLine(templateGenerate, newRequestStruct.Fields, newRequestStruct.Name)
@@ -61,8 +60,7 @@ func generateRequestNonStatusCodeStyle(
 ) (string, string) {
 	// generate struct for request
 	fieldsRequestString, newRequestStructs := generateStructFields("Request", handlerName, request, []string{}, []myfile.NewStruct{}, "")
-	templateGenerate = strings.Replace(templateGenerate, "#requestFields#", fieldsRequestString, -1)
-	templateGenerate = myfile.AddStructToLastLine(templateGenerate, fieldsRequestString, handlerName+"Request")
+	templateGenerate = myfile.AddStructToLastLine(templateGenerate, fieldsRequestString, GetHandlerRequestName(handlerName))
 	if len(newRequestStructs) != 0 {
 		for _, newRequestStruct := range newRequestStructs {
 			templateGenerate = myfile.AddStructToLastLine(templateGenerate, newRequestStruct.Fields, newRequestStruct.Name)

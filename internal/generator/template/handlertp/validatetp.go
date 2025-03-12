@@ -1,22 +1,30 @@
 package handlertp
 
-const RequestValidationTemplate = `
+import (
+	"fmt"
+)
+
+const (
+	ValidationErrorFuncName = "ValidationError"
+)
+
+var RequestValidationTemplate = fmt.Sprintf(`
 	validate := validator.New()
 	if err := validate.Struct(req); err != nil {
-		return ctx.JSON(http.StatusBadRequest, ValidationError(err))
+		return ctx.JSON(http.StatusBadRequest, %s(err))
 	}
-`
+`, ValidationErrorFuncName)
 
-const RequestValidationForStatusCodeStyleTemplate = `validate := validator.New()
+var RequestValidationForStatusCodeStyleTemplate = fmt.Sprintf(`validate := validator.New()
 	if err := validate.Struct(req); err != nil {
 		// you can use this result from the validation error to return the map error message
-		_ = ValidationError(err)
-		return ctx.JSON(http.StatusBadRequest, dto.#responseName#)
+		_ = %s(err)
+		return ctx.JSON(http.StatusBadRequest, %s.%s)
 	}
-`
+`, ValidationErrorFuncName, DtoFolderAndPackageName, ResponseNameReplaceName)
 
-const ValidationHelperTemplate = `
-package handlertp
+var ValidationHelperTemplate = fmt.Sprintf(`
+package %s`, PackageNameReplaceName) + fmt.Sprintf(`
 
 import (
 	"fmt"
@@ -25,8 +33,8 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-func ValidationError(err error) map[string]string {
-	var validationErrors validator.ValidationErrors
+func %s(err error) map[string]string {`, ValidationErrorFuncName) +
+	`var validationErrors validator.ValidationErrors
 	errs := make(map[string]string)
 	if errors.As(err, &validationErrors) {
 		for _, validationErr := range validationErrors {

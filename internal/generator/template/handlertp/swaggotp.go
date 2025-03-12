@@ -1,24 +1,38 @@
 package handlertp
 
-const SwagBaseTemplate = `
-// @Router       #path# [#method#]
+import "fmt"
+
+const ()
+
+var SwagBaseTemplate = fmt.Sprintf(`
+// @Router       %s [%s]
 // @Accept       json
-// @Produce      json`
+// @Produce      json`, SwagGoPathReplaceName, SwagGoMethodReplaceName)
 
-const SwagSummaryTemplate = `
-// @Summary      #content#`
+var SwagSummaryTemplate = fmt.Sprintf(`
+// @Summary      %s`, SwagGoContentReplaceName)
 
-const SwagDescriptionTemplate = `
-// @Description      #content#`
+var SwagDescriptionTemplate = fmt.Sprintf(`
+// @Description      %s`, SwagGoContentReplaceName)
 
-const SwagRequestBodyTemplate = `
-// @Param request body dto.#request# true "request body"`
+var SwagRequestBodyTemplate = fmt.Sprintf(`
+// @Param request body %s.%s true "request body"`, DtoFolderAndPackageName, SwagGoRequestReplaceName)
 
-const SwagSuccessTemplate = `
-// @Success      #statusCode#  {#type#}  dto.#response#`
+var SwagSuccessTemplate = fmt.Sprintf(`
+// @Success      %s  {%s}  %s.%s`,
+	SwagGoStatusCodeReplaceName,
+	SwagGoTypeReplaceName,
+	DtoFolderAndPackageName,
+	SwagGoResponseReplaceName,
+)
 
-const SwagFailureTemplate = `
-// @Failure      #statusCode#  {#type#}  dto.#response#`
+var SwagFailureTemplate = fmt.Sprintf(`
+// @Failure      %s  {%s}  %s.%s`,
+	SwagGoStatusCodeReplaceName,
+	SwagGoTypeReplaceName,
+	DtoFolderAndPackageName,
+	SwagGoResponseReplaceName,
+)
 
-const SwagTagTemplate = `
-// @Tags        #content#`
+var SwagTagTemplate = fmt.Sprintf(`
+// @Tags        %s`, SwagGoContentReplaceName)

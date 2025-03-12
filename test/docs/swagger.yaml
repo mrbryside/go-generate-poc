@@ -1,53 +1,91 @@
 basePath: /api/v1
 definitions:
-  CreateProductsRequest:
+  CreateProductsBadRequestDataResponse:
     properties:
-      type:
+      manbank:
         type: string
-    required:
-    - type
-    type: object
-  CreateProductsResponse:
-    properties:
+      message:
+        type: string
       type:
         type: string
     type: object
-  DeleteProductDataMyDataResponse:
-    properties:
-      type:
-        type: string
-    type: object
-  DeleteProductDataResponse:
-    properties:
-      my_data:
-        $ref: '#/definitions/DeleteProductDataMyDataResponse'
-    type: object
-  DeleteProductResponse:
+  CreateProductsBadRequestResponse:
     properties:
       data:
-        $ref: '#/definitions/DeleteProductDataResponse'
+        $ref: '#/definitions/CreateProductsBadRequestDataResponse'
     type: object
-  GetProductResponse:
+  CreateProductsNameRequest:
     properties:
       type:
         type: string
     type: object
-  GetProductsResponse:
+  CreateProductsOKResponse:
     properties:
       type:
         type: string
     type: object
-  UpdateProductRequest:
+  CreateProductsPriceRequest:
     properties:
+      type:
+        type: integer
+    type: object
+  CreateProductsRequest:
+    properties:
+      name:
+        $ref: '#/definitions/CreateProductsNameRequest'
+      price:
+        $ref: '#/definitions/CreateProductsPriceRequest'
       type:
         type: string
     required:
     - type
     type: object
-  UpdateProductResponse:
+  EditProductsBadRequestDataResponse:
+    properties:
+      message:
+        type: string
+      type:
+        type: string
+    type: object
+  EditProductsBadRequestResponse:
+    properties:
+      data:
+        $ref: '#/definitions/EditProductsBadRequestDataResponse'
+    type: object
+  EditProductsNameRequest:
     properties:
       type:
         type: string
+    type: object
+  EditProductsOKDataResponse:
+    properties:
+      state:
+        type: string
+      workflow_id:
+        type: integer
+    type: object
+  EditProductsOKResponse:
+    properties:
+      data:
+        $ref: '#/definitions/EditProductsOKDataResponse'
+      success:
+        type: boolean
+    type: object
+  EditProductsPriceRequest:
+    properties:
+      type:
+        type: integer
+    type: object
+  EditProductsRequest:
+    properties:
+      name:
+        $ref: '#/definitions/EditProductsNameRequest'
+      price:
+        $ref: '#/definitions/EditProductsPriceRequest'
+      type:
+        type: string
+    required:
+    - type
     type: object
 info:
   contact: {}
@@ -56,26 +94,6 @@ info:
   version: "1.0"
 paths:
   /products:
-    delete:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/DeleteProductResponse'
-    get:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/GetProductsResponse'
     post:
       consumes:
       - application/json
@@ -92,7 +110,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/CreateProductsResponse'
+            $ref: '#/definitions/CreateProductsOKResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/CreateProductsBadRequestResponse'
     put:
       consumes:
       - application/json
@@ -102,25 +124,18 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/UpdateProductRequest'
+          $ref: '#/definitions/EditProductsRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/UpdateProductResponse'
-  /productsById:
-    get:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
+            $ref: '#/definitions/EditProductsOKResponse'
+        "400":
+          description: Bad Request
           schema:
-            $ref: '#/definitions/GetProductResponse'
+            $ref: '#/definitions/EditProductsBadRequestResponse'
 swagger: "2.0"
 tags:
 - description: API For Frontend only. Please aware that this API keeps changing by

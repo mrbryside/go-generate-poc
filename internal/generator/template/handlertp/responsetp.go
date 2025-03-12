@@ -1,5 +1,6 @@
 package handlertp
 
-const SuccessJsonResponseTemplate = `return ctx.JSON(#httpStatus#, dto.#responseName#)`
+import "fmt"
 
-const SuccessNoContentResponseTemplate = `return ctx.NoContent(#httpStatus#)`
+var SuccessJsonResponseTemplate = fmt.Sprintf(`return ctx.JSON(%s, %s.%s)`, HttpStatusReplaceName, DtoFolderAndPackageName, ResponseNameReplaceName)
+var SuccessNoContentResponseTemplate = fmt.Sprintf(`return ctx.NoContent(%s)`, HttpStatusReplaceName)

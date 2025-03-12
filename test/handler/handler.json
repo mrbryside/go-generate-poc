@@ -6,57 +6,56 @@
     "method": "post",
     "header": "",
     "request": {
-      "type": "string|required"
+      "type": "string|required",
+      "name": {
+        "type": "string"
+      },
+      "price": {
+        "type": "int"
+      }
     },
     "response": {
-      "type": "string"
+      "200": {
+        "type": "string"
+      },
+      "400": {
+        "data": {
+          "type": "string",
+          "message": "string",
+          "manbank": "string"
+        }
+      }
     }
   },
   {
     "type": "handler",
-    "name": "getProducts",
+    "name": "editProducts",
     "api": "/products",
-    "method": "get",
+    "method": "put",
     "header": "",
-    "response": {
-      "type": "string"
-    }
-  },
-  {
-      "type": "handler",
-      "name": "getProduct",
-      "api": "/productsById",
-      "method": "get",
-      "header": "",
-      "response": {
+    "request": {
+      "type": "string|required",
+      "name": {
         "type": "string"
-      }
-  },
-  {
-      "type": "handler",
-      "name": "updateProduct",
-      "api": "/products",
-      "method": "put",
-      "header": "",
-      "request": {
-        "type": "string|required"
       },
-      "response": {
-        "type": "string"
+      "price": {
+        "type": "int"
       }
-  },
-  {
-      "type": "handler",
-      "name": "deleteProduct",
-      "api": "/products",
-      "method": "delete",
-      "header": "",
-      "response": {
+    },
+    "response": {
+      "200": {
+        "success": "bool",
+        "data":{
+            "workflow_id": "int",
+            "state": "string"
+        }
+      },
+      "400": {
         "data": {
-          "my_data": {
-            "type": "string"
-          }
+          "type": "string",
+          "message": "string"
         }
       }
+    }
   }
 ]

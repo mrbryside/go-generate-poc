@@ -38,4 +38,7 @@ func tearDown(dir string, paths []string, handlerGenPathForLogs []string) {
 			return
 		}
 	}
+
+	// if not have any gen file in /dto folder, remove /dto folder
+	// TODO: implement this
 }

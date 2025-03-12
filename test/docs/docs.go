@@ -16,22 +16,6 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/products": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/GetProductsResponse"
-                        }
-                    }
-                }
-            },
             "put": {
                 "consumes": [
                     "application/json"
@@ -46,7 +30,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/UpdateProductRequest"
+                            "$ref": "#/definitions/EditProductsRequest"
                         }
                     }
                 ],
@@ -54,7 +38,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/UpdateProductResponse"
+                            "$ref": "#/definitions/EditProductsOKResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/EditProductsBadRequestResponse"
                         }
                     }
                 }
@@ -81,41 +71,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/CreateProductsResponse"
+                            "$ref": "#/definitions/CreateProductsOKResponse"
                         }
-                    }
-                }
-            },
-            "delete": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/DeleteProductResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/productsById": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/GetProductResponse"
+                            "$ref": "#/definitions/CreateProductsBadRequestResponse"
                         }
                     }
                 }
@@ -123,50 +85,89 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "CreateProductsBadRequestDataResponse": {
+            "type": "object",
+            "properties": {
+                "manbank": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "CreateProductsBadRequestResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/CreateProductsBadRequestDataResponse"
+                }
+            }
+        },
+        "CreateProductsNameRequest": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "CreateProductsOKResponse": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "CreateProductsPriceRequest": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "integer"
+                }
+            }
+        },
         "CreateProductsRequest": {
             "type": "object",
             "required": [
                 "type"
             ],
             "properties": {
+                "name": {
+                    "$ref": "#/definitions/CreateProductsNameRequest"
+                },
+                "price": {
+                    "$ref": "#/definitions/CreateProductsPriceRequest"
+                },
                 "type": {
                     "type": "string"
                 }
             }
         },
-        "CreateProductsResponse": {
+        "EditProductsBadRequestDataResponse": {
             "type": "object",
             "properties": {
+                "message": {
+                    "type": "string"
+                },
                 "type": {
                     "type": "string"
                 }
             }
         },
-        "DeleteProductDataMyDataResponse": {
-            "type": "object",
-            "properties": {
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
-        "DeleteProductDataResponse": {
-            "type": "object",
-            "properties": {
-                "my_data": {
-                    "$ref": "#/definitions/DeleteProductDataMyDataResponse"
-                }
-            }
-        },
-        "DeleteProductResponse": {
+        "EditProductsBadRequestResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/DeleteProductDataResponse"
+                    "$ref": "#/definitions/EditProductsBadRequestDataResponse"
                 }
             }
         },
-        "GetProductResponse": {
+        "EditProductsNameRequest": {
             "type": "object",
             "properties": {
                 "type": {
@@ -174,28 +175,48 @@ const docTemplate = `{
                 }
             }
         },
-        "GetProductsResponse": {
+        "EditProductsOKDataResponse": {
             "type": "object",
             "properties": {
-                "type": {
+                "state": {
                     "type": "string"
+                },
+                "workflow_id": {
+                    "type": "integer"
                 }
             }
         },
-        "UpdateProductRequest": {
+        "EditProductsOKResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/EditProductsOKDataResponse"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "EditProductsPriceRequest": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "integer"
+                }
+            }
+        },
+        "EditProductsRequest": {
             "type": "object",
             "required": [
                 "type"
             ],
             "properties": {
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
-        "UpdateProductResponse": {
-            "type": "object",
-            "properties": {
+                "name": {
+                    "$ref": "#/definitions/EditProductsNameRequest"
+                },
+                "price": {
+                    "$ref": "#/definitions/EditProductsPriceRequest"
+                },
                 "type": {
                     "type": "string"
                 }

@@ -10,18 +10,18 @@ import (
 	"github.com/mrbryside/go-generate/test/handler/dto"
 )
 
-func (h Handler) CreateProducts(ctx echo.Context) error {
-	var req dto.CreateProductsRequest
+func (h Handler) EditProducts(ctx echo.Context) error {
+	var req dto.EditProductsRequest
 	if err := ctx.Bind(&req); err != nil {
-		return ctx.JSON(http.StatusBadRequest, dto.CreateProductsBadRequestResponse{})
+		return ctx.JSON(http.StatusBadRequest, dto.EditProductsBadRequestResponse{})
 	}
 
 	validate := validator.New()
 	if err := validate.Struct(req); err != nil {
 		// you can use this result from the validation error to return the map error message
 		_ = ValidationError(err)
-		return ctx.JSON(http.StatusBadRequest, dto.CreateProductsBadRequestResponse{})
+		return ctx.JSON(http.StatusBadRequest, dto.EditProductsBadRequestResponse{})
 	}
 
-	return ctx.JSON(http.StatusOK, dto.CreateProductsOKResponse{})
+	return ctx.JSON(http.StatusOK, dto.EditProductsOKResponse{})
 }

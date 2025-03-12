@@ -1,7 +1,9 @@
 package handlertp
 
-const RouteTemplate = `
-package handlertp
+import "fmt"
+
+var RouteTemplate = fmt.Sprintf(`
+package %s
 
 import "github.com/labstack/echo/v4"
 
@@ -9,8 +11,14 @@ import "github.com/labstack/echo/v4"
 // -----------------------------------------------------------------
 
 func RegisterRoutes(g *echo.Group, h Handler) {
-	#route#
+	%s	
 }
-`
+`, PackageNameReplaceName,
+	RouteReplaceName,
+)
 
-const EchoRouteTemplate = `g.#handlerMethod#("#handlerRoute#", h.#handlerFuncName#)`
+var EchoRouteTemplate = fmt.Sprintf(`g.%s("%s", h.%s)`,
+	HandlerMethodReplaceName,
+	HandlerRouteReplaceName,
+	HandlerFuncNameReplaceName,
+)
